@@ -2,19 +2,28 @@ version: '3.8'
 
 services:
 
-  mysql:
+  movie-mysql:
     image: mysql:8.0
     container_name: movie-mysql
-
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: movie_db
-
     ports:
       - "3307:3306"
-
     volumes:
-      - mysql_data:/var/lib/mysql
+      - movie_mysql_data:/var/lib/mysql
+
+  theatre-mysql:
+    image: mysql:8.0
+    container_name: theatre-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: theatre_db
+    ports:
+      - "3308:3306"
+    volumes:
+      - theatre_mysql_data:/var/lib/mysql
 
 volumes:
-  mysql_data:
+  movie_mysql_data:
+  theatre_mysql_data:
