@@ -28,17 +28,19 @@ The goal of this project is to understand scalable backend architecture and core
 - Added REST endpoint testing
 - Docker setup for MySQL database
 - Database connectivity configuration
-
-### In Progress
 - Entity and Repository layer
 - CRUD APIs for movies
 - Docker Compose integration
+
+### In Progress
+- Booking Service
+- locking mechanism enhancement
+- logging
 
 ### Planned
 - API Gateway
 - Service Discovery
 - User Service
-- Booking Service
 - Notification Service
 - Circuit Breaker Pattern
 - Inter-service communication
