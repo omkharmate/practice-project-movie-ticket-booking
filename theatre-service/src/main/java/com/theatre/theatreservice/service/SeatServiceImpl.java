@@ -20,6 +20,17 @@ public class SeatServiceImpl implements SeatService {
     private final SeatRepository seatRepository;
     private final ScreenRepository screenRepository;
 
+
+    @Override
+    public Seat getSeatById(Long id) {
+
+        return seatRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Seat not found"
+                        ));
+    }
+
     @Override
     public SeatResponse createSeat(SeatRequest request) {
 

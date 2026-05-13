@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  booking-service:
+    image: mysql:8.0
+    container_name: booking-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: booking_db
+    ports:
+      - "3309:3306"
+    volumes:
+      - booking_mysql_data:/var/lib/mysql
 
   movie-mysql:
     image: mysql:8.0
@@ -27,3 +37,4 @@ services:
 volumes:
   movie_mysql_data:
   theatre_mysql_data:
+  booking_mysql_data:

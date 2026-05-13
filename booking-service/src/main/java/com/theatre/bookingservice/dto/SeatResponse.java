@@ -1,5 +1,4 @@
-package com.theatre.theatreservice.dto;
-
+package com.theatre.bookingservice.dto;
 
 import lombok.*;
 
