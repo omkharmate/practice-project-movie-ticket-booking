@@ -15,12 +15,14 @@ import com.theatre.bookingservice.repository.BookedSeatRepository;
 import com.theatre.bookingservice.repository.BookingRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookingServiceImpl
@@ -37,13 +39,15 @@ public class BookingServiceImpl
     public BookingResponse createBooking(
             BookingRequest request
     ) {
-
+        log.info("Creating booking — userId={} showId={} seats={}",
+                request.getUserId(), request.getShowId(), request.getSeatIds());
         // STEP 1 → VALIDATE SHOW
 
         ShowResponse show =
                 theatreClient.getShow(
                         request.getShowId()
                 );
+        log.debug("Show fetched — screenId={} price={}", show.getScreenId(), show.getPrice());
 
         if (show == null) {
 
@@ -147,6 +151,9 @@ public class BookingServiceImpl
 
         bookedSeatRepository.saveAll(bookedSeats);
 
+
+        log.info("Booking confirmed — bookingId={} totalPrice={}", savedBooking.getId(), totalPrice);
+
         // STEP 7 → RETURN RESPONSE
 
         return BookingResponse.builder()
@@ -208,6 +215,7 @@ public class BookingServiceImpl
     public void cancelBooking(
             Long id
     ) {
+        log.info("Cancelling bookingId={}", id);
 
         Booking booking =
                 bookingRepository.findById(id)
@@ -225,5 +233,6 @@ public class BookingServiceImpl
         bookedSeatRepository.deleteAll(
                 booking.getBookedSeats()
         );
+        log.info("Booking cancelled — bookingId={}", id);
     }
 }
