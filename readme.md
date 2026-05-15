@@ -41,6 +41,8 @@ The goal of this project is to understand scalable backend architecture and core
 
 ### Planned
 - API Gateway
+- monitoring tools
+- jenkins
 - User Service
 - Notification Service
 
