@@ -31,19 +31,18 @@ The goal of this project is to understand scalable backend architecture and core
 - Entity and Repository layer
 - CRUD APIs for movies
 - Docker Compose integration
+- Booking Service
 
 ### In Progress
-- Booking Service
+- Circuit Breaker Pattern - partially done
 - locking mechanism enhancement
-- logging
+- Inter-service communication
+- Service Discovery
 
 ### Planned
 - API Gateway
-- Service Discovery
 - User Service
 - Notification Service
-- Circuit Breaker Pattern
-- Inter-service communication
 
 ---
 
