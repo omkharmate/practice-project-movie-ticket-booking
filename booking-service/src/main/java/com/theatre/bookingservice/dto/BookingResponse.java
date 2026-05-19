@@ -3,14 +3,15 @@ package com.theatre.bookingservice.dto;
 import com.theatre.bookingservice.entity.BookingStatus;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class BookingResponse {
 
     private Long bookingId;
@@ -21,9 +22,15 @@ public class BookingResponse {
 
     private BookingStatus bookingStatus;
 
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 
     private LocalDateTime bookedAt;
 
     private List<Long> seatIds;
+
+    // NEW
+
+    private String status;
+
+    private LocalDateTime lockExpiresAt;
 }

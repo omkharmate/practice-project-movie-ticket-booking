@@ -4,13 +4,11 @@ package com.theatre.bookingservice.service;
 import com.theatre.bookingservice.client.TheatreClient;
 import com.theatre.bookingservice.dto.BookingRequest;
 import com.theatre.bookingservice.dto.BookingResponse;
-import com.theatre.bookingservice.dto.SeatResponse;
-import com.theatre.bookingservice.dto.ShowResponse;
 import com.theatre.bookingservice.entity.BookedSeat;
 import com.theatre.bookingservice.entity.Booking;
 import com.theatre.bookingservice.entity.BookingStatus;
+import com.theatre.bookingservice.entity.SeatLockStatus;
 import com.theatre.bookingservice.exception.ResourceNotFoundException;
-import com.theatre.bookingservice.exception.SeatAlreadyBookedException;
 import com.theatre.bookingservice.repository.BookedSeatRepository;
 import com.theatre.bookingservice.repository.BookingRepository;
 import jakarta.transaction.Transactional;
@@ -19,8 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+
+import static com.theatre.bookingservice.dto.BookingResponse.*;
 
 @Slf4j
 @Service
@@ -34,144 +33,103 @@ public class BookingServiceImpl
 
     private final TheatreClient theatreClient;
 
-    @Override
     @Transactional
+    @Override
+    public void confirmBooking(Long bookingId) {
+
+        Booking booking =
+                bookingRepository.findById(bookingId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Booking not found"
+                                )
+                        );
+
+        if (booking.getBookingStatus()
+                != BookingStatus.PENDING) {
+
+            throw new RuntimeException(
+                    "Booking already processed"
+            );
+        }
+
+        booking.setBookingStatus(
+                BookingStatus.CONFIRMED
+        );
+
+        List<BookedSeat> bookedSeats =
+                bookedSeatRepository
+                        .findByBookingId(bookingId);
+
+        for (BookedSeat bookedSeat : bookedSeats) {
+
+            bookedSeat.setStatus(
+                    SeatLockStatus.BOOKED
+            );
+        }
+
+        bookedSeatRepository.saveAll(bookedSeats);
+
+        bookingRepository.save(booking);
+    }
+
+    @Transactional
+    @Override
     public BookingResponse createBooking(
             BookingRequest request
     ) {
-        log.info("Creating booking — userId={} showId={} seats={}",
-                request.getUserId(), request.getShowId(), request.getSeatIds());
-        // STEP 1 → VALIDATE SHOW
 
-        ShowResponse show =
-                theatreClient.getShow(
-                        request.getShowId()
+        LocalDateTime now = LocalDateTime.now();
+
+        List<BookedSeat> existingLocks =
+                bookedSeatRepository.findActiveSeatLocks(
+                        request.getShowId(),
+                        request.getSeatIds(),
+                        now
                 );
-        log.debug("Show fetched — screenId={} price={}", show.getScreenId(), show.getPrice());
 
-        if (show == null) {
+        if (!existingLocks.isEmpty()) {
 
-            throw new ResourceNotFoundException(
-                    "Show not found"
+            throw new RuntimeException(
+                    "Seat already locked/booked"
             );
         }
-
-        // STEP 2 → VALIDATE SEATS
-
-        List<SeatResponse> validatedSeats =
-                new ArrayList<>();
-
-        for (Long seatId : request.getSeatIds()) {
-
-            SeatResponse seat =
-                    theatreClient.getSeat(seatId);
-
-            if (seat == null) {
-
-                throw new ResourceNotFoundException(
-                        "Seat not found with id: "
-                                + seatId
-                );
-            }
-
-            // IMPORTANT VALIDATION
-            // seat screen must match show screen
-
-            if (!seat.getScreenId()
-                    .equals(show.getScreenId())) {
-
-                throw new RuntimeException(
-                        "Seat does not belong to show's screen"
-                );
-            }
-
-            validatedSeats.add(seat);
-        }
-
-        // STEP 3 → CHECK ALREADY BOOKED
-
-        List<BookedSeat> alreadyBookedSeats =
-                bookedSeatRepository
-                        .findByShowIdAndSeatIdIn(
-                                request.getShowId(),
-                                request.getSeatIds()
-                        );
-
-        if (!alreadyBookedSeats.isEmpty()) {
-
-            throw new SeatAlreadyBookedException(
-                    "Some seats are already booked"
-            );
-        }
-
-        // STEP 4 → CALCULATE TOTAL PRICE
-
-        Double totalPrice =
-                show.getPrice()
-                        * request.getSeatIds().size();
-
-        // STEP 5 → CREATE BOOKING
 
         Booking booking =
                 Booking.builder()
                         .userId(request.getUserId())
                         .showId(request.getShowId())
-                        .bookingStatus(
-                                BookingStatus.CONFIRMED
-                        )
-                        .totalPrice(totalPrice)
-                        .bookedAt(
-                                LocalDateTime.now()
-                        )
+                        .bookingStatus(BookingStatus.PENDING)
                         .build();
 
-        Booking savedBooking =
+        final Booking savedBooking =
                 bookingRepository.save(booking);
-
-        // STEP 6 → CREATE BOOKED SEATS
+        LocalDateTime expiryTime =
+                now.plusMinutes(5);
 
         List<BookedSeat> bookedSeats =
-                new ArrayList<>();
+                request.getSeatIds()
+                        .stream()
+                        .map(seatId ->
 
-        for (SeatResponse seat : validatedSeats) {
+                                BookedSeat.builder()
+                                        .seatId(seatId)
+                                        .showId(request.getShowId())
+                                        .status(
+                                                SeatLockStatus.LOCKED
+                                        )
+                                        .lockExpiresAt(expiryTime)
+                                        .booking(savedBooking)
+                                        .build()
 
-            BookedSeat bookedSeat =
-                    BookedSeat.builder()
-                            .seatId(seat.getId())
-                            .showId(request.getShowId())
-                            .seatNumber(
-                                    seat.getSeatNumber()
-                            )
-                            .status("BOOKED")
-                            .booking(savedBooking)
-                            .build();
-
-            bookedSeats.add(bookedSeat);
-        }
+                        ).toList();
 
         bookedSeatRepository.saveAll(bookedSeats);
 
-
-        log.info("Booking confirmed — bookingId={} totalPrice={}", savedBooking.getId(), totalPrice);
-
-        // STEP 7 → RETURN RESPONSE
-
-        return BookingResponse.builder()
+        return builder()
                 .bookingId(savedBooking.getId())
-                .userId(savedBooking.getUserId())
-                .showId(savedBooking.getShowId())
-                .bookingStatus(
-                        savedBooking.getBookingStatus()
-                )
-                .totalPrice(
-                        savedBooking.getTotalPrice()
-                )
-                .bookedAt(
-                        savedBooking.getBookedAt()
-                )
-                .seatIds(
-                        request.getSeatIds()
-                )
+                .status("PENDING")
+                .lockExpiresAt(expiryTime)
                 .build();
     }
 
@@ -193,23 +151,20 @@ public class BookingServiceImpl
                         .map(BookedSeat::getSeatId)
                         .toList();
 
-        return BookingResponse.builder()
+        return builder()
                 .bookingId(booking.getId())
                 .userId(booking.getUserId())
                 .showId(booking.getShowId())
                 .bookingStatus(
                         booking.getBookingStatus()
                 )
-                .totalPrice(
-                        booking.getTotalPrice()
-                )
+                .totalPrice(booking.getTotalPrice())
                 .bookedAt(
                         booking.getBookedAt()
                 )
                 .seatIds(seatIds)
                 .build();
     }
-
     @Override
     @Transactional
     public void cancelBooking(

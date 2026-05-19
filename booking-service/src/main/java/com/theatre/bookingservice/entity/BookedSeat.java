@@ -6,12 +6,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "booked_seats")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class BookedSeat {
 
     @Id
@@ -22,13 +21,12 @@ public class BookedSeat {
 
     private Long showId;
 
-    private String seatNumber;
-
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private SeatLockStatus status;
 
     private LocalDateTime lockExpiresAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "booking_id")
     private Booking booking;
 }

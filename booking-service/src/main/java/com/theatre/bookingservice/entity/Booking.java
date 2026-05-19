@@ -3,6 +3,7 @@ package com.theatre.bookingservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingStatus bookingStatus;
 
-    private Double totalPrice;
+    private BigDecimal totalPrice;
 
     private LocalDateTime bookedAt;
 

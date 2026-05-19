@@ -4,6 +4,7 @@ import com.theatre.bookingservice.dto.BookingRequest;
 import com.theatre.bookingservice.dto.BookingResponse;
 import com.theatre.bookingservice.service.BookingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,6 +13,18 @@ import org.springframework.web.bind.annotation.*;
 public class BookingController {
 
     private final BookingService bookingService;
+
+    @PostMapping("/{bookingId}/confirm")
+    public ResponseEntity<String> confirmBooking(
+            @PathVariable Long bookingId
+    ) {
+
+        bookingService.confirmBooking(bookingId);
+
+        return ResponseEntity.ok(
+                "Booking confirmed successfully"
+        );
+    }
 
     @PostMapping
     public BookingResponse createBooking(
