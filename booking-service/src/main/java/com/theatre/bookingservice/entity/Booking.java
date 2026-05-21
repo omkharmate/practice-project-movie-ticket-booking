@@ -31,10 +31,8 @@ public class Booking {
 
     private LocalDateTime bookedAt;
 
-    @OneToMany(
-            mappedBy = "booking",
+    @OneToMany(mappedBy = "booking",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+            fetch = FetchType.LAZY)
     private List<BookedSeat> bookedSeats;
 }

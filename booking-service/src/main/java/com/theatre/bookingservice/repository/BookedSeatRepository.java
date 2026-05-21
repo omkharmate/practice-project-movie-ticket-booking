@@ -12,25 +12,26 @@ import java.util.List;
 public interface BookedSeatRepository
         extends JpaRepository<BookedSeat, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
-            SELECT bs
-            FROM BookedSeat bs
-            WHERE bs.showId = :showId
-            AND bs.seatId IN :seatIds
-            AND (
-                    bs.status = com.theatre.bookingservice.entity.SeatLockStatus.BOOKED
-                    OR (
-                        bs.status = com.theatre.bookingservice.entity.SeatLockStatus.LOCKED
-                        AND bs.lockExpiresAt > :currentTime
-                    )
+       SELECT bs
+       FROM BookedSeat bs
+       WHERE bs.showId = :showId
+       AND bs.seatId IN :seatIds
+       AND (
+            bs.status = 'BOOKED'
+            OR
+            (
+                bs.status = 'LOCKED'
+                AND bs.lockExpiresAt > :currentTime
             )
-            """)
+       )
+       """)
     List<BookedSeat> findActiveSeatLocks(
-            @Param("showId") Long showId,
-            @Param("seatIds") List<Long> seatIds,
-            @Param("currentTime") LocalDateTime currentTime
+            Long showId,
+            List<Long> seatIds,
+            LocalDateTime currentTime
     );
+
 
     List<BookedSeat> findByStatusAndLockExpiresAtBefore(
             SeatLockStatus status,

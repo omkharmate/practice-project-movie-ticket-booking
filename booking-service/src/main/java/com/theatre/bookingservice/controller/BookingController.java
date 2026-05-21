@@ -14,24 +14,27 @@ public class BookingController {
 
     private final BookingService bookingService;
 
-    @PostMapping("/{bookingId}/confirm")
-    public ResponseEntity<String> confirmBooking(
-            @PathVariable Long bookingId
-    ) {
-
-        bookingService.confirmBooking(bookingId);
-
-        return ResponseEntity.ok(
-                "Booking confirmed successfully"
-        );
-    }
 
     @PostMapping
-    public BookingResponse createBooking(
+    public ResponseEntity<BookingResponse> createBooking(
             @RequestBody BookingRequest request
     ) {
 
-        return bookingService.createBooking(request);
+        return ResponseEntity.ok(
+                bookingService.createBooking(request)
+        );
+    }
+
+    @PostMapping("/{bookingId}/confirm")
+    public ResponseEntity<BookingResponse> confirmBooking(
+            @PathVariable Long bookingId
+    ) {
+
+        return ResponseEntity.ok(
+                bookingService.confirmBooking(
+                        bookingId
+                )
+        );
     }
 
     @GetMapping("/{id}")

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(
         name = "theatre-service",
         url = "http://localhost:8082",
-        fallback = TheatreClientFallback.class
+        fallbackFactory = TheatreClientFallback.class   // ← was: fallback
 )
 public interface TheatreClient {
 

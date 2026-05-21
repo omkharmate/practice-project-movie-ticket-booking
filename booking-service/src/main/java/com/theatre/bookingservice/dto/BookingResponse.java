@@ -1,14 +1,16 @@
 package com.theatre.bookingservice.dto;
 
 import com.theatre.bookingservice.entity.BookingStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,10 +29,6 @@ public class BookingResponse {
     private LocalDateTime bookedAt;
 
     private List<Long> seatIds;
-
-    // NEW
-
-    private String status;
 
     private LocalDateTime lockExpiresAt;
 }

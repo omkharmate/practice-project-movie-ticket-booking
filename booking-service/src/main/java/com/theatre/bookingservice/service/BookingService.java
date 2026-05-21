@@ -9,9 +9,15 @@ public interface BookingService {
             BookingRequest request
     );
 
-    BookingResponse getBookingById(Long id);
+    BookingResponse confirmBooking(
+            Long bookingId
+    );
 
-    void confirmBooking(Long bookingId);
+    BookingResponse getBookingById(
+            Long id
+    );
 
-    void cancelBooking(Long id);
+    void cancelBooking(
+            Long id
+    );
 }
