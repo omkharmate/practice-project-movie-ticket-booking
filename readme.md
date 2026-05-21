@@ -32,16 +32,16 @@ The goal of this project is to understand scalable backend architecture and core
 - CRUD APIs for movies
 - Docker Compose integration
 - Booking Service
+- locking mechanism enhancement
 
 ### In Progress
 - Circuit Breaker Pattern - partially done
-- locking mechanism enhancement
 - Inter-service communication
 - Service Discovery
+- monitoring tools
 
 ### Planned
 - API Gateway
-- monitoring tools
 - jenkins
 - User Service
 - Notification Service
