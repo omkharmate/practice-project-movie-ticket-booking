@@ -4,12 +4,16 @@ import com.movie.movie_service.dto.CreateMovieRequest;
 import com.movie.movie_service.dto.MovieResponse;
 import com.movie.movie_service.dto.UpdateMovieRequest;
 import com.movie.movie_service.entity.Movie;
+import com.movie.movie_service.exception.ResourceNotFoundException;
 import com.movie.movie_service.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 
 @Service
 @RequiredArgsConstructor
@@ -49,16 +53,15 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @Cacheable(value = "movies", key = "#id")
     public MovieResponse getMovieById(Long id) {
-
-        Movie movie = movieRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Movie not found with id: " + id));
-
-        return mapToResponse(movie);
+        return movieRepository.findById(id)
+                .map(this::mapToResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
     }
 
     @Override
+    @CachePut(value = "movies", key = "#id")
     public MovieResponse updateMovie(Long id,
                                      UpdateMovieRequest request) {
 
@@ -82,6 +85,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
+    @CacheEvict(value = "movies", key = "#id")
     public void deleteMovie(Long id) {
 
         Movie movie = movieRepository.findById(id)
