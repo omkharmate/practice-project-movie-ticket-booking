@@ -53,7 +53,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    @Cacheable(value = "movies", key = "#id")
+    @Cacheable(value = "movies", key = "#id" , cacheManager = "cacheManager")
     public MovieResponse getMovieById(Long id) {
         return movieRepository.findById(id)
                 .map(this::mapToResponse)
@@ -61,7 +61,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    @CachePut(value = "movies", key = "#id")
+    @CachePut(value = "movies", key = "#id" , cacheManager = "cacheManager")
     public MovieResponse updateMovie(Long id,
                                      UpdateMovieRequest request) {
 
@@ -85,7 +85,7 @@ public class MovieServiceImpl implements MovieService {
     }
 
     @Override
-    @CacheEvict(value = "movies", key = "#id")
+    @CacheEvict(value = "movies", key = "#id" ,cacheManager = "cacheManager")
     public void deleteMovie(Long id) {
 
         Movie movie = movieRepository.findById(id)
